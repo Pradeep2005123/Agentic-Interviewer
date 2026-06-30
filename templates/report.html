@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Evaluation Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="hero-card">
+            <div class="hero-copy">
+                <p class="eyebrow">HR Evaluation Report</p>
+                <h1>Candidate Interview Summary</h1>
+                <p class="subtitle">
+                    Interview type: {{ report.type|title }} | Resume focus: {{ report.language }}
+                    {% if report.scenario_category %}
+                    | Scenario: {{ report.scenario_category.replace('-', ' ')|title }}
+                    {% endif %}
+                </p>
+            </div>
+        </section>
+
+        {% if report.resume_profile %}
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Resume Profile</h2>
+            </div>
+            <article class="evaluation-card">
+                <p><strong>Candidate:</strong> {{ report.resume_profile.candidate_name or "Not available" }}</p>
+                <p><strong>Role Focus:</strong> {{ report.resume_profile.role_focus or "Not available" }}</p>
+                <p><strong>Primary Skill:</strong> {{ report.resume_profile.primary_language or report.language }}</p>
+                <p><strong>Summary:</strong> {{ report.resume_profile.experience_summary or "Not available" }}</p>
+                <div class="list-block">
+                    <strong>Skills Identified</strong>
+                    <ul>
+                        {% for item in report.resume_profile.skills or [] %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </article>
+        </section>
+        {% endif %}
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Overall Evaluation</h2>
+            </div>
+            <article class="evaluation-card">
+                <div class="score-banner">
+                    <span>Overall Score</span>
+                    <strong>{{ report.evaluation.overall_score or 0 }}/25</strong>
+                </div>
+                <p><strong>Rating:</strong> {{ report.evaluation.rating or "Not available" }}</p>
+                <p><strong>Summary:</strong> {{ report.evaluation.summary or "Not available" }}</p>
+                <p><strong>Recommendation:</strong> {{ report.evaluation.recommendation or "Not available" }}</p>
+                <div class="list-block">
+                    <strong>Strengths</strong>
+                    <ul>
+                        {% for item in report.evaluation.strengths or [] %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="list-block">
+                    <strong>Improvements</strong>
+                    <ul>
+                        {% for item in report.evaluation.improvements or [] %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        {% if report.plagiarism_report %}
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Originality Check</h2>
+            </div>
+            <article class="evaluation-card originality-card {{ (report.plagiarism_report.overall_risk or 'LOW')|lower }}">
+                <div class="score-banner">
+                    <span>Overall Risk</span>
+                    <strong>{{ report.plagiarism_report.overall_risk or "LOW" }}</strong>
+                </div>
+                <p><strong>Summary:</strong> {{ report.plagiarism_report.summary or "No originality concerns detected." }}</p>
+                <p><strong>Note:</strong> {{ report.plagiarism_report.note or "AI-based originality risk only; no external plagiarism database was checked." }}</p>
+                <div class="correction-grid">
+                    {% for item in report.plagiarism_report.results or [] %}
+                    <article class="correction-card">
+                        <span class="question-number">Answer {{ loop.index }} - {{ item.risk_level or "LOW" }} {{ item.risk_percent or 0 }}%</span>
+                        <p><strong>Reason:</strong> {{ item.reason or "No concern found." }}</p>
+                        <p><strong>Tip:</strong> {{ item.originality_tip or "Use your own examples and explain your thinking." }}</p>
+                    </article>
+                    {% endfor %}
+                </div>
+            </article>
+        </section>
+        {% endif %}
+
+        {% if report.final_outcome %}
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Final Decision</h2>
+            </div>
+            <article class="evaluation-card">
+                <div class="score-banner">
+                    <span>Interview Result</span>
+                    <strong>{{ report.final_outcome.status or "Not available" }}</strong>
+                </div>
+                <p><strong>Readiness:</strong> {{ report.final_outcome.readiness or "Not available" }}</p>
+                <p><strong>Summary:</strong> {{ report.final_outcome.final_summary or "Not available" }}</p>
+                <p><strong>Decision Reason:</strong> {{ report.final_outcome.decision_reason or "Not available" }}</p>
+                <div class="list-block">
+                    <strong>Practical Corrections</strong>
+                    <div class="correction-grid">
+                        {% for item in report.final_outcome.topic_corrections or [] %}
+                        <article class="correction-card">
+                            <span class="question-number">{{ item.topic }}</span>
+                            <p><strong>What went wrong:</strong> {{ item.issue }}</p>
+                            <p><strong>Fix now:</strong> {{ item.correction }}</p>
+                            <p><strong>Practice next:</strong> {{ item.practice }}</p>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="list-block">
+                    <strong>Roadmap</strong>
+                    <div class="roadmap-flow">
+                        {% for item in report.final_outcome.roadmap or [] %}
+                        <div class="roadmap-step">
+                            <div class="roadmap-node">
+                                <span class="roadmap-badge">{{ item.step }}</span>
+                                <h3>{{ item.title or item.focus }}</h3>
+                                <p><strong>Focus:</strong> {{ item.focus }}</p>
+                                <p><strong>Action:</strong> {{ item.action }}</p>
+                                <p><strong>Outcome:</strong> {{ item.outcome }}</p>
+                            </div>
+                            {% if not loop.last %}
+                            <div class="roadmap-arrow">&rarr;</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </article>
+        </section>
+        {% endif %}
+
+        {% if report.answer_key %}
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Answer Comparison</h2>
+            </div>
+            <div class="stack">
+                {% for item in report.answer_key %}
+                <article class="review-card">
+                    <div class="review-top">
+                        <span class="question-number">{{ item.phase or "Round" }} {{ loop.index }}</span>
+                    </div>
+                    <h3>{{ item.question }}</h3>
+                    <p><strong>Your answer:</strong> {{ item.candidate_answer }}</p>
+                    <p><strong>Expected answer:</strong> {{ item.expected_answer }}</p>
+                    <p><strong>What was missing:</strong> {{ item.gap }}</p>
+                    <p><strong>How to improve:</strong> {{ item.improvement_tip }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if report.proctoring_videos %}
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Proctoring Recordings</h2>
+                <p>Saved camera recording files from active interview rounds.</p>
+            </div>
+            <article class="evaluation-card">
+                <div class="list-block">
+                    <strong>Saved Files</strong>
+                    <ul>
+                        {% for item in report.proctoring_videos %}
+                        <li>{{ item.round|title }} - {{ item.reason.replace('_', ' ')|title }} - {{ item.filename }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </article>
+        </section>
+        {% endif %}
+
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Question Review</h2>
+            </div>
+            <div class="stack">
+                {% for question in report.questions %}
+                {% set answer = (report.answers | selectattr('id', 'equalto', question.id) | list | first) %}
+                {% set review = (report.reviews | selectattr('id', 'equalto', question.id) | list | first) %}
+                <article class="review-card">
+                    <div class="review-top">
+                        <span class="question-number">Question {{ loop.index }}</span>
+                        <span class="score-badge">{{ review.score if review else 0 }}/5</span>
+                    </div>
+                    <h3>{{ question.question }}</h3>
+                    <p><strong>Candidate answer:</strong> {{ answer.answer if answer else "" }}</p>
+                    <p><strong>Review:</strong> {{ review.review if review else "Not available" }}</p>
+                    <p><strong>Strength:</strong> {{ review.strength if review else "Not available" }}</p>
+                    <p><strong>Improvement:</strong> {{ review.improvement if review else "Not available" }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

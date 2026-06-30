@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Interviewer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-default-model="{{ model_name }}" data-authenticated="{{ 'true' if is_authenticated else 'false' }}" data-username="{{ username }}">
+    <main class="page-shell">
+        <section class="hero-card">
+            <div class="hero-copy">
+                <p class="eyebrow">Groq Powered Interview Flow</p>
+                <h1>Online Agentic Interviewer</h1>
+                <p class="subtitle">
+                    Login or register, upload a resume, answer tailored questions, then receive a final evaluation.
+                </p>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+                <div class="visual-window">
+                    <div class="window-top">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="signal-row">
+                        <div class="signal-line wide"></div>
+                        <div class="score-ring">AI</div>
+                    </div>
+                    <div class="mini-question active"></div>
+                    <div class="mini-question"></div>
+                    <div class="mini-question short"></div>
+                    <div class="wave-row">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="phase-strip">
+                <div class="phase-pill active" data-auth-pill>Account</div>
+                <div class="phase-pill active" data-phase-pill="0">Start</div>
+                <div class="phase-pill" data-phase-pill="1">Questions</div>
+                <div class="phase-pill" data-phase-pill="2">Review</div>
+                <div class="phase-pill" data-phase-pill="3">Evaluation</div>
+                <div class="phase-pill" data-phase-pill="4">HR Round</div>
+                <div class="phase-pill" data-phase-pill="5">End</div>
+            </div>
+        </section>
+
+        <section class="panel" id="authPhase">
+            <div class="panel-header">
+                <h2>Candidate Account</h2>
+                <p>Login or create an account before starting the interview.</p>
+            </div>
+            <div id="authMessage" class="auth-message"></div>
+            <div class="focus-metrics" aria-label="Interview highlights">
+                <article>
+                    <strong>Resume</strong>
+                    <span>Profile mapped</span>
+                </article>
+                <article>
+                    <strong>5 Qs</strong>
+                    <span>Adaptive round</span>
+                </article>
+                <article>
+                    <strong>HR</strong>
+                    <span>Final review</span>
+                </article>
+            </div>
+            <div class="auth-grid">
+                <form id="loginForm" class="stack auth-card">
+                    <h3>Login</h3>
+                    <label>
+                        <span>Email</span>
+                        <input id="loginEmail" type="email" autocomplete="email" required>
+                    </label>
+                    <label>
+                        <span>Password</span>
+                        <input id="loginPassword" type="password" autocomplete="current-password" required>
+                    </label>
+                    <button class="primary-btn" type="submit">Login</button>
+                </form>
+
+                <form id="registerForm" class="stack auth-card">
+                    <h3>Register</h3>
+                    <label>
+                        <span>Name</span>
+                        <input id="registerName" type="text" autocomplete="name" required>
+                    </label>
+                    <label>
+                        <span>Email</span>
+                        <input id="registerEmail" type="email" autocomplete="email" required>
+                    </label>
+                    <label>
+                        <span>Password</span>
+                        <input id="registerPassword" type="password" autocomplete="new-password" minlength="6" required>
+                    </label>
+                    <button class="secondary-btn" type="submit">Create Account</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="panel user-bar hidden" id="userBar">
+            <strong id="userGreeting">Candidate</strong>
+            <button id="logoutBtn" class="secondary-btn" type="button">Logout</button>
+        </section>
+
+        <div id="interviewShell" class="stack hidden">
+            <section class="panel" id="messagePanel"></section>
+
+            <section class="panel proctor-panel hidden" id="proctorPanel">
+                <div>
+                    <span class="question-number">Camera Proctoring</span>
+                    <h3>Candidate camera is recording during the active test.</h3>
+                    <p id="proctorStatus">Camera will start when the question round begins.</p>
+                </div>
+                <video id="proctorPreview" autoplay muted playsinline></video>
+            </section>
+
+            <section class="panel" id="startPhase">
+            <div class="panel-header">
+                <h2>Phase 1: Start Interview</h2>
+                <p>Upload the candidate resume and select the interview category. The app will create 5 questions from the resume profile.</p>
+            </div>
+            <form id="startForm" class="form-grid">
+                <label class="form-span-3 upload-zone">
+                    <span>Resume Upload</span>
+                    <input id="resumeFile" type="file" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp" required>
+                    <small id="resumeFileName">PDF, DOCX, TXT, PNG, JPG, JPEG, or WEBP</small>
+                </label>
+                <label>
+                    <span>Interview Type</span>
+                    <select id="interviewType" required>
+                        <option value="">Select type</option>
+                        <option value="dsa">DSA</option>
+                        <option value="aptitude">Aptitude</option>
+                        <option value="debugging">Debugging Round</option>
+                        <option value="scenario">Scenario Based</option>
+                    </select>
+                </label>
+                <label class="hidden" id="scenarioCategoryWrap">
+                    <span>Scenario Category</span>
+                    <select id="scenarioCategory">
+                        <option value="">Select scenario category</option>
+                        <option value="app-development">App Development</option>
+                        <option value="website-development">Website Development</option>
+                        <option value="api-development">API Development</option>
+                        <option value="team-management">Team Management</option>
+                        <option value="data-recovery">Data Recovery</option>
+                        <option value="product-prioritization">Feature Prioritization</option>
+                    </select>
+                </label>
+                <label class="hidden form-span-3" id="scenarioContextWrap">
+                    <span>Scenario Context</span>
+                    <textarea id="scenarioContext" rows="9" placeholder="Add the project or situation context for the scenario round."></textarea>
+                </label>
+                <input id="spokenLanguage" type="hidden" value="en">
+                <button type="submit" class="primary-btn">Upload Resume & Generate Questions</button>
+            </form>
+            </section>
+
+            <section class="panel hidden" id="questionPhase">
+            <div class="panel-header">
+                <h2>Phase 1: Answer Questions</h2>
+                <p>Answer all 5 questions. When you submit, the LLM will review and score each answer out of 5.</p>
+            </div>
+            <form id="answersForm" class="stack"></form>
+            <button id="submitAnswersBtn" class="primary-btn">Submit Answers for Review</button>
+            </section>
+
+            <section class="panel hidden" id="reviewPhase">
+            <div class="panel-header">
+                <h2>Phase 2: Answer Review</h2>
+                <p>Your answers are reviewed here with a score out of 5 for each question.</p>
+            </div>
+            <div id="reviewList" class="stack"></div>
+            <button id="evaluateBtn" class="primary-btn">Generate Final Evaluation</button>
+            </section>
+
+            <section class="panel hidden" id="evaluationPhase">
+            <div class="panel-header">
+                <h2>Phase 3: Final Evaluation</h2>
+                <p>The LLM summarizes your performance, strengths, and areas to improve.</p>
+            </div>
+            <div id="evaluationContent" class="stack"></div>
+            <div id="reportLinkCard" class="share-card hidden">
+                <strong>Evaluation Report For HR</strong>
+                <p>Use this link to share the final evaluation report with HR before the HR round begins.</p>
+                <div class="share-row">
+                    <input id="reportLinkInput" type="text" readonly>
+                    <button id="copyReportLinkBtn" class="secondary-btn" type="button">Copy Link</button>
+                </div>
+            </div>
+            <button id="startHrRoundBtn" class="primary-btn" type="button">Upload To HR And Start HR Round</button>
+            <button id="endBtn" class="secondary-btn">End Interview</button>
+            </section>
+
+            <section class="panel hidden" id="hrRoundPhase">
+            <div class="panel-header">
+                <h2>Phase 4: Final HR Round</h2>
+                <p>The evaluation report has been prepared for HR. These final HR questions are based on the candidate's technical performance.</p>
+            </div>
+            <form id="hrAnswersForm" class="stack"></form>
+            <div id="completionCard" class="completion-card hidden">
+                <span class="question-number">Interview Complete</span>
+                <h2>Thank you for using Online Agentic Interviewer</h2>
+                <p>Your final report is ready. You can submit another attempt or exit the interview session.</p>
+            </div>
+            <div id="finalOutcomeContent" class="stack hidden"></div>
+            <div id="answerKeyContent" class="stack hidden"></div>
+            <button id="submitHrAnswersBtn" class="primary-btn" type="button">Submit HR Answers</button>
+            <div id="completionActions" class="completion-actions hidden">
+                <button id="anotherAttemptBtn" class="primary-btn" type="button">Submit Another Attempt</button>
+                <button id="exitInterviewBtn" class="secondary-btn" type="button">Exit</button>
+            </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
